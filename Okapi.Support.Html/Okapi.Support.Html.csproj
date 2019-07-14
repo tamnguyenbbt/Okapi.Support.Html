@@ -1,0 +1,107 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net45;net46</TargetFrameworks>
+    <Version>1.0.0</Version>
+    <Authors>Tam Nguyen</Authors>
+    <Company>Tam Nguyen</Company>
+    <Description>Support Okapi, providing html report formatter and html logger</Description>
+    <PackageTags>Okapi, ExtSelenium, Selenium; Automation; Test</PackageTags>
+    <RepositoryUrl>https://github.com/tamnguyenbbt/Okapi.Support.File</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <PackageLicenseUrl>https://github.com/tamnguyenbbt/Okapi.Support.File/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/tamnguyenbbt/Okapi.Support.File</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>Support Okapi, providing html report formatter and html logger</PackageReleaseNotes>
+    <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+    <NeutralLanguage>en</NeutralLanguage>
+    <PackageId>Okapi.Support.Html</PackageId>
+    <Product>Okapi.Support.Html</Product>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="html\css\main.css" />
+    <None Remove="html\css\util.css" />
+    <None Remove="html\fonts\font-awesome-4-7-0\css\font-awesome-min.css" />
+    <None Remove="html\fonts\font-awesome-4-7-0\css\font-awesome.css" />
+    <None Remove="html\images\icons\favicon.ico" />
+    <None Remove="html\index.html" />
+    <None Remove="html\js\main.js" />
+    <None Remove="html\vendor\animate\animate.css" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-css.map" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-grid-css.map" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-grid-min-css.map" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-grid-min.css" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-grid.css" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-min-css.map" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-min.css" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-reboot-css.map" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-reboot-min-css.map" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-reboot-min.css" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap-reboot.css" />
+    <None Remove="html\vendor\bootstrap\css\bootstrap.css" />
+    <None Remove="html\vendor\bootstrap\js\bootstrap-min.js" />
+    <None Remove="html\vendor\bootstrap\js\bootstrap.js" />
+    <None Remove="html\vendor\bootstrap\js\popper-min.js" />
+    <None Remove="html\vendor\bootstrap\js\popper.js" />
+    <None Remove="html\vendor\bootstrap\js\tooltip.js" />
+    <None Remove="html\vendor\jquery\jquery-3-2-1-min.js" />
+    <None Remove="html\vendor\perfect-scrollbar\perfect-scrollbar-min.js" />
+    <None Remove="html\vendor\perfect-scrollbar\perfect-scrollbar.css" />
+    <None Remove="html\vendor\select2\select2-min.css" />
+    <None Remove="html\vendor\select2\select2-min.js" />
+    <None Remove="html\vendor\select2\select2.css" />
+    <None Remove="html\vendor\select2\select2.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="html\css\main.css">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="html\css\util.css" />
+    <EmbeddedResource Include="html\fonts\font-awesome-4-7-0\css\font-awesome.css">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="html\fonts\font-awesome-4-7-0\css\font-awesome-min.css">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="html\images\icons\favicon.ico" />
+    <EmbeddedResource Include="html\index.html">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="html\js\main.js" />
+    <EmbeddedResource Include="html\vendor\animate\animate.css" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-grid.css" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-grid-css.map" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-grid-min.css" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-grid-min-css.map" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-reboot.css" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-reboot-css.map" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-reboot-min.css" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-reboot-min-css.map" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap.css" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-css.map" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-min.css" />
+    <EmbeddedResource Include="html\vendor\bootstrap\css\bootstrap-min-css.map" />
+    <EmbeddedResource Include="html\vendor\bootstrap\js\bootstrap.js" />
+    <EmbeddedResource Include="html\vendor\bootstrap\js\bootstrap-min.js" />
+    <EmbeddedResource Include="html\vendor\bootstrap\js\popper.js" />
+    <EmbeddedResource Include="html\vendor\bootstrap\js\popper-min.js" />
+    <EmbeddedResource Include="html\vendor\bootstrap\js\tooltip.js" />
+    <EmbeddedResource Include="html\vendor\jquery\jquery-3-2-1-min.js" />
+    <EmbeddedResource Include="html\vendor\perfect-scrollbar\perfect-scrollbar.css" />
+    <EmbeddedResource Include="html\vendor\perfect-scrollbar\perfect-scrollbar-min.js" />
+    <EmbeddedResource Include="html\vendor\select2\select2.css" />
+    <EmbeddedResource Include="html\vendor\select2\select2.js" />
+    <EmbeddedResource Include="html\vendor\select2\select2-min.css" />
+    <EmbeddedResource Include="html\vendor\select2\select2-min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Okapi.Common" Version="1.0.0" />
+    <PackageReference Include="Serilog" Version="2.8.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
+</Project>
