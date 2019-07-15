@@ -12,7 +12,8 @@ namespace Okapi.Support.Html
 {
     public class ReportFormatter : IReportFormatter
     {
-        private readonly string mainReportFileName;
+        private readonly string reportPath;
+        private readonly string detailedReportPath;
         private readonly string reportDirectory;
         private Session session = null;
         private const string okapiSessionIdAttribute = "okapiSessionId";
@@ -20,11 +21,94 @@ namespace Okapi.Support.Html
         public ReportFormatter()
         {
             reportDirectory = Session.Instance.ReportDirectory;
-            mainReportFileName = $"{reportDirectory}{Path.DirectorySeparatorChar}OkapiReport_{Util.SessionStartDateTime.GetTimestamp()}.html";
+            detailedReportPath = $"{reportDirectory}{Path.DirectorySeparatorChar}OkapiReport_{Util.SessionStartDateTime.GetTimestamp()}";
+            reportPath = $"{detailedReportPath}.html";
             session = Session.Instance;
         }
 
-        private void CreateReport(HtmlTextWriter writer, TestCase testCase)
+        public void Run(TestCase testCase)
+        {
+            string reportTemplateName = "report.html";
+            string detailedReportTemplateName = "test-case-detailed-report.html";
+            string existingReportData = null;
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            List<string> allResourceFullFileNames = assembly.GetAllResourceFullFileNames().ToList();
+
+            string reportTemplateFullName = assembly.GetResourceFullFileName(reportTemplateName, "html", "table-highlight-vertical");
+            string reportTemplateContent = assembly.GetResourceContent(reportTemplateFullName);
+
+            string detailedReportTemplateFullName = assembly.GetResourceFullFileName(detailedReportTemplateName, "html", "table-fixed-column");
+            string detailedReportTemplateContent = assembly.GetResourceContent(detailedReportTemplateFullName);
+
+            StringWriter stringWriter = new StringWriter();
+
+            using (HtmlTextWriter writer = new HtmlTextWriter(stringWriter))
+            {
+                BuildReportData(writer, testCase);
+            }
+
+            string newReportData = stringWriter.ToString();
+
+            if (session.ReportingInProgress)
+            {
+                string currentReportContent = Util.ReadFile(reportPath);
+                existingReportData = GetExistingReportData(currentReportContent);
+            }
+            else
+            {
+                session.ReportingInProgress = true;
+
+                if (allResourceFullFileNames.HasAny())
+                {
+                    var copyingResourceFullFileNames = allResourceFullFileNames.Where(x => !x.Equals(reportTemplateFullName));
+
+                    if (copyingResourceFullFileNames.HasAny())
+                    {
+                        copyingResourceFullFileNames.ToList().ForEach(x =>
+                        {
+                            CopyEmbeddedResourceFileToReportFolder(assembly, x);
+                        });
+                    }
+                }
+            }
+
+            string reportContent = reportTemplateContent.Replace("{testcases}", $"{existingReportData}{newReportData}");
+            Util.WriteToFile(reportPath, true, reportContent);
+
+            //TO DO: 
+            Util.WriteToFile($"{detailedReportPath}{Path.DirectorySeparatorChar}{testCase.Method.Name}.html", true, detailedReportTemplateContent);
+        }
+
+        private void CopyEmbeddedResourceFileToReportFolder(Assembly assembly, string resourceFullFileName)
+        {
+            if (!string.IsNullOrWhiteSpace(resourceFullFileName) && assembly != null)
+            {
+                string assemblyName = assembly.GetName().Name;
+                string path = resourceFullFileName.Substring(assemblyName.Length + 1);
+                string[] parts = path?.Split('.');
+                string destinationDirectory = reportDirectory;
+                string destinationFileName = resourceFullFileName;
+
+                if (parts.HasAny())
+                {
+                    destinationFileName = parts.Length > 1 ? $"{parts[parts.Length - 2]}.{parts[parts.Length - 1]}" : parts[parts.Length - 1];
+                    int directoryPartCount = parts.Length > 2 ? parts.Length - 2 : 0;
+
+                    if (directoryPartCount > 0)
+                    {
+                        for (int i = 0; i < directoryPartCount; i++)
+                        {
+                            destinationDirectory = $"{destinationDirectory}{Path.DirectorySeparatorChar}{parts[i]}";
+                        }
+                    }
+                }
+
+                assembly.CopyResourceFileToFolder(resourceFullFileName, destinationDirectory, destinationFileName);
+            }
+        }
+
+        private void BuildReportData(HtmlTextWriter writer, TestCase testCase)
         {
             writer.AddAttribute(okapiSessionIdAttribute, $"{session.Id}");
             writer.AddAttribute(HtmlTextWriterAttribute.Class, "row100");
@@ -51,35 +135,8 @@ namespace Okapi.Support.Html
             writer.RenderEndTag();
         }
 
-        public void Run(TestCase testCase)
+        private void BuildDetailedReportData(HtmlTextWriter writer, TestCase testCase)
         {
-            string reportTemplateName = "index.html";
-            string existingReportData = null;
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string reportTemplateContent = Util.GetEmbeddedResource(assembly, reportTemplateName);
-            StringWriter stringWriter = new StringWriter();
-
-            using (HtmlTextWriter writer = new HtmlTextWriter(stringWriter))
-            {
-                CreateReport(writer, testCase);
-            }
-
-            string newReportData = stringWriter.ToString();
-
-            if (session.ReportingInProgress)
-            {
-                string currentReportContent = Util.ReadFile(mainReportFileName);
-                existingReportData = GetExistingData(currentReportContent);
-            }
-            else
-            {
-                session.ReportingInProgress = true;
-                WriteEmbeddedResourceFilesToReportFolder(assembly, reportTemplateName);
-            }
-
-            string reportContent = reportTemplateContent.Replace("{testcases}", $"{existingReportData}{newReportData}");
-            Util.WriteToFile(mainReportFileName, true, reportContent);
-
             //if (testCase.AllAdditionalData.HasAny())
             //{
             //    writer.Write(writer.NewLine);
@@ -171,45 +228,7 @@ namespace Okapi.Support.Html
             //}
         }
 
-        private void WriteEmbeddedResourceFilesToReportFolder(Assembly assembly, string excludeName = null)
-        {
-            IList<string> fullResourceNames = Util.GetAllResourceFullFileNames(assembly);
-
-            if (fullResourceNames.HasAny())
-            {
-                fullResourceNames.ToList().ForEach(x =>
-                {
-                    string[] nameParts = x.Split('.');
-                    int len = nameParts.Length;
-                    string fileName = $"{nameParts[len - 2]}.{nameParts[len - 1]}";
-
-                    if (!string.IsNullOrWhiteSpace(x))
-                    {
-                        if (excludeName == null || (excludeName != null && !fileName.Equals(excludeName)))
-                        {
-                            WriteEmbeddedResourceFileToReportFolder(assembly, x);
-                        }
-                    }
-                });
-            }
-        }
-
-        private void WriteEmbeddedResourceFileToReportFolder(Assembly assembly, string fullResourceName)
-        {
-            string[] nameParts = fullResourceName.Split('.');
-            int len = nameParts.Length;
-            string fileName = $"{nameParts[len - 2]}.{nameParts[len - 1]}";
-            string folder = reportDirectory;
-
-            for (int i = 4; i < len - 2; i++)
-            {
-                folder = $"{folder}{Path.DirectorySeparatorChar}{nameParts[i]}";
-            }
-
-            Util.WriteEmbeddedResourceFileToFolder(assembly, fullResourceName, folder, fileName);
-        }
-
-        private string GetExistingData(string currentReportContent)
+        private string GetExistingReportData(string currentReportContent)
         {
             var dataFirstIndex = currentReportContent.IndexOf($"<tr {okapiSessionIdAttribute}=\"{session.Id}\"");
             string currentData = currentReportContent.Substring(dataFirstIndex).Trim();
