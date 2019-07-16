@@ -259,8 +259,8 @@ namespace Okapi.Support.Html
                 { "Start At", testCase.StartDateTime.ToString()},
                 { "End At", testCase.EndDateTime.ToString().Contains("1/1/0001") ? null : testCase.EndDateTime.ToString()},
                 { "Test Object Info", testCase.TestObjectInfo },
-                { "Additional Info", testCase.AllAdditionalData.ConvertToString() },
-                { "Fail Additional Info", testCase.FailAdditionalData.ConvertToString() },
+                { "Additional Info", testCase.AllAdditionalData.ConvertToString()?.Replace("\"", "") },
+                { "Fail Additional Info", testCase.FailAdditionalData.ConvertToString()?.Replace("\"", "") },
                 { "Exception", testCase.Exception?.ToString() }
             };
         }
@@ -275,9 +275,10 @@ namespace Okapi.Support.Html
                 { "Start At", testStep.StartDateTime.ToString()},
                 { "End At", testStep.EndDateTime.ToString().Contains("1/1/0001") ? null : testStep.EndDateTime.ToString()},
                 { "Test Object Info", testStep.TestObjectInfo },
-                { "Additional Info", testStep.AllAdditionalData.ConvertToString() },
-                { "Fail Additional Info", testStep.FailAdditionalData.ConvertToString() },
-                { "Exception", testStep.Exception?.ToString() }
+                { "Additional Info", testStep.AllAdditionalData.ConvertToString()?.Replace("\"", "") },
+                { "Fail Additional Info", testStep.FailAdditionalData.ConvertToString()?.Replace("\"", "") },
+                { "Exception", testStep.Exception?.ToString() },
+                { "Parent Steps", testStep.ParentSteps.ConvertToString()?.Replace("\"", "") }
             };
         }
 
