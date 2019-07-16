@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2050
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Okapi.Support.Html", "Okapi.Support.Html\Okapi.Support.Html.csproj", "{E774D6AD-9D31-4921-9F71-B338DDF2BD73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Okapi.Support.Report.Html", "Okapi.Support.Report.Html\Okapi.Support.Report.Html.csproj", "{E774D6AD-9D31-4921-9F71-B338DDF2BD73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
