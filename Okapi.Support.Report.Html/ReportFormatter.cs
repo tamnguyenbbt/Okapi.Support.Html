@@ -8,7 +8,7 @@ using Okapi.Extensions;
 using Okapi.Report;
 using Okapi.Utils;
 
-namespace Okapi.Support.Html
+namespace Okapi.Support.Report.Html
 {
     public class ReportFormatter : IReportFormatter
     {
