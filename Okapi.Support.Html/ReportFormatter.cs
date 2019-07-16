@@ -13,74 +13,103 @@ namespace Okapi.Support.Html
     public class ReportFormatter : IReportFormatter
     {
         private readonly string reportPath;
-        private readonly string detailedReportPath;
+        private readonly string detailedReportDirectory;
         private readonly string reportDirectory;
         private Session session = null;
         private const string okapiSessionIdAttribute = "okapiSessionId";
+        private const string summaryReportTemplateName = "report.html";
+        private const string detailedReportTemplateName = "test-case-detailed-report.html";
+        private const string verticalTableFolderName = "table-highlight-vertical";
+        private const string htmlFolderName = "html";
+        private readonly bool firstTimeReporting = true;
 
         public ReportFormatter()
         {
-            reportDirectory = Session.Instance.ReportDirectory;
-            detailedReportPath = $"{reportDirectory}{Path.DirectorySeparatorChar}OkapiReport_{Util.SessionStartDateTime.GetTimestamp()}";
-            reportPath = $"{detailedReportPath}.html";
             session = Session.Instance;
+            reportDirectory = session.ReportDirectory;
+            detailedReportDirectory = $"{reportDirectory}{Path.DirectorySeparatorChar}OkapiReport_{session.StartDateTime.GetTimestamp()}";
+            reportPath = $"{detailedReportDirectory}.html";
+            firstTimeReporting = !session.ReportingInProgress;
         }
 
         public void Run(TestCase testCase)
         {
-            string reportTemplateName = "report.html";
-            string detailedReportTemplateName = "test-case-detailed-report.html";
-            string existingReportData = null;
-
             Assembly assembly = Assembly.GetExecutingAssembly();
-            List<string> allResourceFullFileNames = assembly.GetAllResourceFullFileNames().ToList();
-
-            string reportTemplateFullName = assembly.GetResourceFullFileName(reportTemplateName, "html", "table-highlight-vertical");
-            string reportTemplateContent = assembly.GetResourceContent(reportTemplateFullName);
-
-            string detailedReportTemplateFullName = assembly.GetResourceFullFileName(detailedReportTemplateName, "html", "table-fixed-column");
-            string detailedReportTemplateContent = assembly.GetResourceContent(detailedReportTemplateFullName);
-
-            StringWriter stringWriter = new StringWriter();
-
-            using (HtmlTextWriter writer = new HtmlTextWriter(stringWriter))
-            {
-                BuildReportData(writer, testCase);
-            }
-
-            string newReportData = stringWriter.ToString();
-
-            if (session.ReportingInProgress)
-            {
-                string currentReportContent = Util.ReadFile(reportPath);
-                existingReportData = GetExistingReportData(currentReportContent);
-            }
-            else
-            {
-                session.ReportingInProgress = true;
-
-                if (allResourceFullFileNames.HasAny())
-                {
-                    var copyingResourceFullFileNames = allResourceFullFileNames.Where(x => !x.Equals(reportTemplateFullName));
-
-                    if (copyingResourceFullFileNames.HasAny())
-                    {
-                        copyingResourceFullFileNames.ToList().ForEach(x =>
-                        {
-                            CopyEmbeddedResourceFileToReportFolder(assembly, x);
-                        });
-                    }
-                }
-            }
-
-            string reportContent = reportTemplateContent.Replace("{testcases}", $"{existingReportData}{newReportData}");
-            Util.WriteToFile(reportPath, true, reportContent);
-
-            //TO DO: 
-            Util.WriteToFile($"{detailedReportPath}{Path.DirectorySeparatorChar}{testCase.Method.Name}.html", true, detailedReportTemplateContent);
+            string mainReportTemplateFullName = WriteMainReport(assembly, testCase);
+            WriteTestCaseDetailedReport(assembly, testCase);
+            CopyEmbeddedHtmlResourcesToReportFolder(assembly, mainReportTemplateFullName);
+            session.ReportingInProgress = true;
         }
 
-        private void CopyEmbeddedResourceFileToReportFolder(Assembly assembly, string resourceFullFileName)
+        private string WriteMainReport(Assembly assembly, TestCase testCase)
+        {
+            string templateFullName = assembly.GetResourceFullFileName(summaryReportTemplateName, htmlFolderName, verticalTableFolderName);
+            string templateContent = assembly.GetResourceContent(templateFullName);
+            string existingReportData = null;
+            List<string> allResourceFullFileNames = assembly.GetAllResourceFullFileNames().ToList();
+            Dictionary<string, string> testCaseDataItems = GetTestCaseDataItems(testCase);
+            string newReportData = BuildMainReportBody(testCaseDataItems);
+
+            if (!firstTimeReporting)
+            {
+                string currentReportContent = Util.ReadFile(reportPath);
+                existingReportData = GetExistingReportBody(currentReportContent);
+            }
+
+            string reportContent = templateContent.Replace("{testcases}", $"{existingReportData}{newReportData}");
+            Util.WriteToFile(reportPath, true, reportContent);
+            return templateFullName;
+        }
+
+        private void WriteTestCaseDetailedReport(Assembly assembly, TestCase testCase)
+        {
+            Dictionary<string, string> testCaseDataItems = GetTestCaseDataItems(testCase);
+            string templateFullName = assembly.GetResourceFullFileName(detailedReportTemplateName, htmlFolderName, verticalTableFolderName);
+            string templateContent = assembly.GetResourceContent(templateFullName);
+            string testCaseDetails = BuildTestArtifactDetailedReportBody(testCaseDataItems, "table100 ver5 m-b-110", "ver5");
+            string stepDetails = BuildTestSteps(testCase);
+
+            string reportContent = templateContent.Replace("{testCaseDetails}", testCaseDetails);
+            reportContent = reportContent.Replace("{testCaseName}", testCase.Method.Name);
+            reportContent = reportContent.Replace("{testStepDetails}", stepDetails);
+            Util.WriteToFile($"{detailedReportDirectory}{Path.DirectorySeparatorChar}{testCase.Method.Name}.html", true, reportContent);
+        }
+
+        private string BuildTestSteps(TestCase testCase)
+        {
+            string stepDetails = null;
+
+            if (testCase.TestSteps.HasAny())
+            {
+                testCase.TestSteps.ToList().ForEach(x =>
+                {
+                    Dictionary<string, string> testStepDataItems = GetTestStepDataItems(x);
+                    stepDetails = $"{stepDetails}{BuildTestArtifactDetailedReportBody(testStepDataItems, "table100 ver2 m-b-10", "ver1")}";
+                });
+            }
+
+            return stepDetails;
+        }
+
+        private void CopyEmbeddedHtmlResourcesToReportFolder(Assembly assembly, string mainReportTemplateFullName)
+        {
+            List<string> allResourceFullFileNames = assembly.GetAllResourceFullFileNames().ToList();
+
+            if (firstTimeReporting && allResourceFullFileNames.HasAny())
+            {
+                var copyingResourceFullFileNames = allResourceFullFileNames.Where(x => !x.Equals(mainReportTemplateFullName));
+
+                if (copyingResourceFullFileNames.HasAny())
+                {
+                    copyingResourceFullFileNames.ToList().ForEach(x =>
+                    {
+                        CopyEmbeddedHtmlResourceToReportFolder(assembly, x);
+                    });
+                }
+            }
+        }
+
+        private void CopyEmbeddedHtmlResourceToReportFolder(Assembly assembly, string resourceFullFileName)
         {
             if (!string.IsNullOrWhiteSpace(resourceFullFileName) && assembly != null)
             {
@@ -108,131 +137,136 @@ namespace Okapi.Support.Html
             }
         }
 
-        private void BuildReportData(HtmlTextWriter writer, TestCase testCase)
+        private string BuildMainReportBody(Dictionary<string, string> testCaseDataItems)
         {
-            writer.AddAttribute(okapiSessionIdAttribute, $"{session.Id}");
-            writer.AddAttribute(HtmlTextWriterAttribute.Class, "row100");
-            writer.RenderBeginTag(HtmlTextWriterTag.Tr);
+            string testCaseName = testCaseDataItems["Test Case Name"];
+            StringWriter stringWriter = new StringWriter();
 
-            List<string> testCaseDataItems = new List<string>
+            using (HtmlTextWriter writer = new HtmlTextWriter(stringWriter))
             {
-                testCase.Method.Name,
-                testCase.Result.ToString(),
-                testCase.DurationInSeconds.ToString(),
-                testCase.StartDateTime.ToString(),
-                testCase.EndDateTime.ToString()
-            };
+                writer.AddAttribute(okapiSessionIdAttribute, $"{session.Id}");
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "row100");
+                writer.RenderBeginTag(HtmlTextWriterTag.Tr);
+                List<string> testCaseDataItemValues = testCaseDataItems.Values.ToList();
 
-            for (int i = 0; i < testCaseDataItems.Count; i++)
-            {
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, $"column100 column{i + 1}");
-                writer.AddAttribute("data-column", $"column{i + 1}");
-                writer.RenderBeginTag(HtmlTextWriterTag.Td);
-                writer.Write(testCaseDataItems[i]);
+                for (int i = 0; i < 5; i++)
+                {
+                    writer.AddAttribute(HtmlTextWriterAttribute.Class, $"column100 column{i + 1}");
+                    writer.AddAttribute("data-column", $"column{i + 1}");
+                    writer.RenderBeginTag(HtmlTextWriterTag.Td);
+
+                    if (i == 0)
+                    {
+                        writer.AddAttribute("href", $"{detailedReportDirectory}/{testCaseName}.html");
+                        writer.RenderBeginTag(HtmlTextWriterTag.A);
+                        writer.Write(testCaseDataItemValues[i]);
+                        writer.RenderEndTag();
+                    }
+                    else
+                    {
+                        writer.Write(testCaseDataItemValues[i]);
+                    }
+
+                    writer.RenderEndTag();
+                }
+
                 writer.RenderEndTag();
             }
 
-            writer.RenderEndTag();
+            return stringWriter.ToString();
         }
 
-        private void BuildDetailedReportData(HtmlTextWriter writer, TestCase testCase)
+        private string BuildTestArtifactDetailedReportBody(Dictionary<string, string> testArtifactDataItems, string tableClass, string tableVersion)
         {
-            //if (testCase.AllAdditionalData.HasAny())
-            //{
-            //    writer.Write(writer.NewLine);
-            //    writer.RenderBeginTag(HtmlTextWriterTag.Span);
-            //    writer.Write($"ADDITIONAL DATA: {testCase.AllAdditionalData.ConvertToString()}");
-            //    writer.RenderEndTag();
-            //}
+            StringWriter stringWriter = new StringWriter();
+            List<string> keys = testArtifactDataItems.Keys.ToList();
+            List<string> values = testArtifactDataItems.Values.ToList();
 
-            //if (testCase.FailAdditionalData.HasAny())
-            //{
-            //    NewLineAndTab(reportStringBuilder);
-            //    reportStringBuilder.Append($"FAIL ADDITIONAL DATA: {testCase.FailAdditionalData.ConvertToString()}");
-            //}
+            using (HtmlTextWriter writer = new HtmlTextWriter(stringWriter))
+            {
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, tableClass);
+                writer.RenderBeginTag(HtmlTextWriterTag.Div);
 
-            //if (testCase.TestObjectInfo != null)
-            //{
-            //    NewLineAndTab(reportStringBuilder);
-            //    reportStringBuilder.Append($"TEST OBJECT INFO: {testCase.TestObjectInfo}");
-            //}
+                writer.AddAttribute("data-vertable", tableVersion);
+                writer.RenderBeginTag(HtmlTextWriterTag.Table);
 
-            //if (testCase.Exception != null)
-            //{
-            //    NewLineAndTab(reportStringBuilder);
-            //    reportStringBuilder.Append($"EXCEPTION: {testCase.Exception}");
-            //}
+                writer.RenderBeginTag(HtmlTextWriterTag.Tbody);
 
-            //IList<TestStep> testSteps = testCase.TestSteps;
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    if (!string.IsNullOrWhiteSpace(values[i]))
+                    {
+                        writer.AddAttribute(HtmlTextWriterAttribute.Class, "row100");
+                        writer.RenderBeginTag(HtmlTextWriterTag.Tr);
 
-            //if (testSteps.HasAny())
-            //{
-            //    testSteps.ToList().ForEach(x =>
-            //    {
-            //        NewLineAndTab(reportStringBuilder);
-            //        NewLineAndTab(reportStringBuilder);
+                        writer.AddAttribute(HtmlTextWriterAttribute.Class, "cell100 column1");
+                        writer.AddAttribute("data-column", "column1");
+                        writer.RenderBeginTag(HtmlTextWriterTag.Td);
 
-            //        reportStringBuilder.Append($"STEP: {x.Method.Name}");
+                        writer.RenderBeginTag(HtmlTextWriterTag.B);
+                        writer.AddAttribute("padding-left", "16em");
+                        writer.RenderBeginTag(HtmlTextWriterTag.Span);
+                        writer.Write(keys[i]);
+                        writer.RenderEndTag();
+                        writer.RenderEndTag();
 
-            //        NewLineAndTab(reportStringBuilder);
-            //        reportStringBuilder.Append($"RESULT: {x.Result}");
+                        writer.RenderEndTag();
 
-            //        if (x.DurationInSeconds > 0)
-            //        {
-            //            NewLineAndTab(reportStringBuilder);
-            //            reportStringBuilder.Append($"DURATION: {x.DurationInSeconds} seconds");
-            //        }
+                        writer.AddAttribute(HtmlTextWriterAttribute.Class, "cell100 column2");
+                        writer.AddAttribute("data-column", "column2");
+                        writer.RenderBeginTag(HtmlTextWriterTag.Td);
+                        writer.Write(values[i]);
+                        writer.RenderEndTag();
 
-            //        NewLineAndTab(reportStringBuilder);
-            //        reportStringBuilder.Append($"START TIME: {x.StartDateTime}");
+                        writer.RenderEndTag();
+                    }
+                }
 
-            //        NewLineAndTab(reportStringBuilder);
-            //        reportStringBuilder.Append($"END TIME: {x.EndDateTime}");
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
 
-            //        if (x.AllAdditionalData.HasAny())
-            //        {
-            //            NewLineAndTab(reportStringBuilder);
-            //            reportStringBuilder.Append($"ADDITIONAL DATA: {x.AllAdditionalData.ConvertToString()}");
-            //        }
-
-            //        if (x.FailAdditionalData.HasAny())
-            //        {
-            //            NewLineAndTab(reportStringBuilder);
-            //            reportStringBuilder.Append($"FAIL ADDITIONAL DATA: {x.FailAdditionalData.ConvertToString()}");
-            //        }
-
-            //        if (x.TestObjectInfo != null)
-            //        {
-            //            NewLineAndTab(reportStringBuilder);
-            //            reportStringBuilder.Append($"TEST OBJECT INFO: {x.TestObjectInfo}");
-            //        }
-
-            //        if (x.Exception != null)
-            //        {
-            //            NewLineAndTab(reportStringBuilder);
-            //            reportStringBuilder.Append($"EXCEPTION: {x.Exception}");
-            //        }
-            //    });
-            //}
-
-            //NewLineAndTab(reportStringBuilder);
-            //NewLineAndTab(reportStringBuilder);
-
-            //if (testCase.Result.Equals(TestResult.PASS))
-            //{
-            //    logger.Information(reportStringBuilder.ToString());
-            //}
-            //else
-            //{
-            //    logger.Error(reportStringBuilder.ToString());
-            //}
+            return stringWriter.ToString();
         }
 
-        private string GetExistingReportData(string currentReportContent)
+        private Dictionary<string, string> GetTestCaseDataItems(TestCase testCase)
         {
-            var dataFirstIndex = currentReportContent.IndexOf($"<tr {okapiSessionIdAttribute}=\"{session.Id}\"");
+            return new Dictionary<string, string>
+            {
+                { "Test Case Name", testCase.Method.Name },
+                { "Result", testCase.Result.ToString() },
+                { "Duration (seconds)", testCase.DurationInSeconds.ToString() },
+                { "Start At", testCase.StartDateTime.ToString() },
+                { "End At", testCase.EndDateTime.ToString() },
+                { "Test Object Info", testCase.TestObjectInfo },
+                { "Additional Info", testCase.AllAdditionalData.ConvertToString() },
+                { "Fail Additional Info", testCase.FailAdditionalData.ConvertToString() },
+                { "Exception", testCase.Exception?.ToString() }
+            };
+        }
+
+        private Dictionary<string, string> GetTestStepDataItems(TestStep testStep)
+        {
+            return new Dictionary<string, string>
+            {
+                { "Step Name", testStep.Method.Name },
+                { "Result", testStep.Result.ToString() },
+                { "Duration (seconds)", testStep.DurationInSeconds.ToString() },
+                { "Start At", testStep.StartDateTime.ToString() },
+                { "End At", testStep.EndDateTime.ToString() },
+                { "Test Object Info", testStep.TestObjectInfo },
+                { "Additional Info", testStep.AllAdditionalData.ConvertToString() },
+                { "Fail Additional Info", testStep.FailAdditionalData.ConvertToString() },
+                { "Exception", testStep.Exception?.ToString() }
+            };
+        }
+
+        private string GetExistingReportBody(string currentReportContent)
+        {
+            int dataFirstIndex = currentReportContent.IndexOf($"<tr {okapiSessionIdAttribute}=\"{session.Id}\"");
             string currentData = currentReportContent.Substring(dataFirstIndex).Trim();
-            var dataLastIndex = currentData.LastIndexOf("</tr>");
+            int dataLastIndex = currentData.LastIndexOf("</tr>");
             return currentData.Substring(0, dataLastIndex + 5).Trim();
         }
     }
