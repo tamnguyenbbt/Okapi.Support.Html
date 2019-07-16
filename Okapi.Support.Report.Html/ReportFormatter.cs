@@ -36,8 +36,8 @@ namespace Okapi.Support.Report.Html
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             string mainReportTemplateFullName = WriteMainReport(assembly, testCase);
-            WriteTestCaseDetailedReport(assembly, testCase);
-            CopyEmbeddedHtmlResourcesToReportFolder(assembly, mainReportTemplateFullName);
+            string testCaseDetailedReportTemplateFullName = WriteTestCaseDetailedReport(assembly, testCase);
+            CopyEmbeddedHtmlResourcesToReportFolder(assembly, mainReportTemplateFullName, testCaseDetailedReportTemplateFullName);
             session.ReportingInProgress = true;
         }
 
@@ -61,7 +61,7 @@ namespace Okapi.Support.Report.Html
             return templateFullName;
         }
 
-        private void WriteTestCaseDetailedReport(Assembly assembly, TestCase testCase)
+        private string WriteTestCaseDetailedReport(Assembly assembly, TestCase testCase)
         {
             Dictionary<string, string> testCaseDataItems = GetTestCaseDataItems(testCase);
             string templateFullName = assembly.GetResourceFullFileName(detailedReportTemplateName, htmlFolderName, verticalTableFolderName);
@@ -73,6 +73,7 @@ namespace Okapi.Support.Report.Html
             reportContent = reportContent.Replace("{testCaseName}", testCase.Method.Name);
             reportContent = reportContent.Replace("{testStepDetails}", stepDetails);
             Util.WriteToFile($"{detailedReportDirectory}{Path.DirectorySeparatorChar}{testCase.Method.Name}.html", true, reportContent);
+            return templateFullName;
         }
 
         private string BuildTestSteps(TestCase testCase)
@@ -91,13 +92,15 @@ namespace Okapi.Support.Report.Html
             return stepDetails;
         }
 
-        private void CopyEmbeddedHtmlResourcesToReportFolder(Assembly assembly, string mainReportTemplateFullName)
+        private void CopyEmbeddedHtmlResourcesToReportFolder(Assembly assembly, params string[] excludedResourceFullNames)
         {
             List<string> allResourceFullFileNames = assembly.GetAllResourceFullFileNames().ToList();
 
             if (firstTimeReporting && allResourceFullFileNames.HasAny())
             {
-                var copyingResourceFullFileNames = allResourceFullFileNames.Where(x => !x.Equals(mainReportTemplateFullName));
+                var copyingResourceFullFileNames = excludedResourceFullNames.HasAny()
+                    ? allResourceFullFileNames.Where(x => !excludedResourceFullNames.Any(e => x.Equals(e)))
+                    : allResourceFullFileNames;
 
                 if (copyingResourceFullFileNames.HasAny())
                 {
@@ -154,7 +157,6 @@ namespace Okapi.Support.Report.Html
                     writer.AddAttribute(HtmlTextWriterAttribute.Class, $"column100 column{i + 1}");
                     writer.AddAttribute("data-column", $"column{i + 1}");
 
-
                     if (i == 0)
                     {
                         writer.RenderBeginTag(HtmlTextWriterTag.Td);
@@ -165,7 +167,6 @@ namespace Okapi.Support.Report.Html
                     }
                     else if (i == 1)
                     {
-
                         switch (testCaseDataItemValues[i].ToLower())
                         {
                             case "pass":
@@ -179,6 +180,7 @@ namespace Okapi.Support.Report.Html
                         }
 
                         writer.RenderBeginTag(HtmlTextWriterTag.Td);
+                        writer.Write(testCaseDataItemValues[i]);
                     }
                     else
                     {
@@ -218,12 +220,11 @@ namespace Okapi.Support.Report.Html
                         writer.AddAttribute(HtmlTextWriterAttribute.Class, "row100");
                         writer.RenderBeginTag(HtmlTextWriterTag.Tr);
 
-                        writer.AddAttribute(HtmlTextWriterAttribute.Class, "cell100 column1");
+                        writer.AddAttribute(HtmlTextWriterAttribute.Class, "column100 column1");
                         writer.AddAttribute("data-column", "column1");
                         writer.RenderBeginTag(HtmlTextWriterTag.Td);
 
                         writer.RenderBeginTag(HtmlTextWriterTag.B);
-                        writer.AddAttribute("padding-left", "16em");
                         writer.RenderBeginTag(HtmlTextWriterTag.Span);
                         writer.Write(keys[i]);
                         writer.RenderEndTag();
@@ -231,8 +232,24 @@ namespace Okapi.Support.Report.Html
 
                         writer.RenderEndTag();
 
-                        writer.AddAttribute(HtmlTextWriterAttribute.Class, "cell100 column2");
+                        writer.AddAttribute(HtmlTextWriterAttribute.Class, "column100 column2");
                         writer.AddAttribute("data-column", "column2");
+
+                        if (i == 1)
+                        {
+                            switch (values[i].ToLower())
+                            {
+                                case "pass":
+                                    writer.AddAttribute(HtmlTextWriterAttribute.Style, "color: green; ");
+                                    break;
+                                case "fail":
+                                    writer.AddAttribute(HtmlTextWriterAttribute.Style, "color: red; ");
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+
                         writer.RenderBeginTag(HtmlTextWriterTag.Td);
                         writer.Write(values[i]);
                         writer.RenderEndTag();

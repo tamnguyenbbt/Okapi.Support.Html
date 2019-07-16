@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net45;net46</TargetFrameworks>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Tam Nguyen</Authors>
     <Company>Tam Nguyen</Company>
     <Description>Support Okapi, providing html report formatter</Description>
@@ -12,7 +12,7 @@
     <PackageProjectUrl>https://github.com/tamnguyenbbt/Okapi.Support.Report.Html</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Correct ReportFormatter namespace</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed the bug where test case result was not written out to html report</PackageReleaseNotes>
     <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
     <NeutralLanguage>en</NeutralLanguage>
     <PackageId>Okapi.Support.Report.Html</PackageId>
