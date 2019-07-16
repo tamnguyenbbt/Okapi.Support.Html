@@ -56,7 +56,7 @@ namespace Okapi.Support.Html
                 existingReportData = GetExistingReportBody(currentReportContent);
             }
 
-            string reportContent = templateContent.Replace("{testcases}", $"{existingReportData}{newReportData}");
+            string reportContent = templateContent.Replace("{testCases}", $"{existingReportData}{newReportData}");
             Util.WriteToFile(reportPath, true, reportContent);
             return templateFullName;
         }
@@ -84,7 +84,7 @@ namespace Okapi.Support.Html
                 testCase.TestSteps.ToList().ForEach(x =>
                 {
                     Dictionary<string, string> testStepDataItems = GetTestStepDataItems(x);
-                    stepDetails = $"{stepDetails}{BuildTestArtifactDetailedReportBody(testStepDataItems, "table100 ver2 m-b-10", "ver1")}";
+                    stepDetails = $"{stepDetails}{BuildTestArtifactDetailedReportBody(testStepDataItems, "table100 ver2 m-b-10", x.Result.Equals(TestResult.PASS) ? "ver1" : "ver4")}";
                 });
             }
 
@@ -153,17 +153,36 @@ namespace Okapi.Support.Html
                 {
                     writer.AddAttribute(HtmlTextWriterAttribute.Class, $"column100 column{i + 1}");
                     writer.AddAttribute("data-column", $"column{i + 1}");
-                    writer.RenderBeginTag(HtmlTextWriterTag.Td);
+
 
                     if (i == 0)
                     {
+                        writer.RenderBeginTag(HtmlTextWriterTag.Td);
                         writer.AddAttribute("href", $"{detailedReportDirectory}/{testCaseName}.html");
                         writer.RenderBeginTag(HtmlTextWriterTag.A);
                         writer.Write(testCaseDataItemValues[i]);
                         writer.RenderEndTag();
                     }
+                    else if (i == 1)
+                    {
+
+                        switch (testCaseDataItemValues[i].ToLower())
+                        {
+                            case "pass":
+                                writer.AddAttribute(HtmlTextWriterAttribute.Style, "color: green; ");
+                                break;
+                            case "fail":
+                                writer.AddAttribute(HtmlTextWriterAttribute.Style, "color: red; ");
+                                break;
+                            default:
+                                break;
+                        }
+
+                        writer.RenderBeginTag(HtmlTextWriterTag.Td);
+                    }
                     else
                     {
+                        writer.RenderBeginTag(HtmlTextWriterTag.Td);
                         writer.Write(testCaseDataItemValues[i]);
                     }
 
@@ -236,9 +255,9 @@ namespace Okapi.Support.Html
             {
                 { "Test Case Name", testCase.Method.Name },
                 { "Result", testCase.Result.ToString() },
-                { "Duration (seconds)", testCase.DurationInSeconds.ToString() },
-                { "Start At", testCase.StartDateTime.ToString() },
-                { "End At", testCase.EndDateTime.ToString() },
+                { "Duration (seconds)", testCase.DurationInSeconds == -1 ? null : testCase.DurationInSeconds.ToString() },
+                { "Start At", testCase.StartDateTime.ToString()},
+                { "End At", testCase.EndDateTime.ToString().Contains("1/1/0001") ? null : testCase.EndDateTime.ToString()},
                 { "Test Object Info", testCase.TestObjectInfo },
                 { "Additional Info", testCase.AllAdditionalData.ConvertToString() },
                 { "Fail Additional Info", testCase.FailAdditionalData.ConvertToString() },
@@ -252,9 +271,9 @@ namespace Okapi.Support.Html
             {
                 { "Step Name", testStep.Method.Name },
                 { "Result", testStep.Result.ToString() },
-                { "Duration (seconds)", testStep.DurationInSeconds.ToString() },
-                { "Start At", testStep.StartDateTime.ToString() },
-                { "End At", testStep.EndDateTime.ToString() },
+                { "Duration (seconds)", testStep.DurationInSeconds == -1 ? null : testStep.DurationInSeconds.ToString() },
+                { "Start At", testStep.StartDateTime.ToString()},
+                { "End At", testStep.EndDateTime.ToString().Contains("1/1/0001") ? null : testStep.EndDateTime.ToString()},
                 { "Test Object Info", testStep.TestObjectInfo },
                 { "Additional Info", testStep.AllAdditionalData.ConvertToString() },
                 { "Fail Additional Info", testStep.FailAdditionalData.ConvertToString() },
