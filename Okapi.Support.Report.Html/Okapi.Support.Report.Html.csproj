@@ -4,7 +4,7 @@
     <Version>1.0.0</Version>
     <Authors>Tam Nguyen</Authors>
     <Company>Tam Nguyen</Company>
-    <Description>Support Okapi, providing html report formatter and html logger</Description>
+    <Description>Support Okapi, providing html report formatter</Description>
     <PackageTags>Okapi, ExtSelenium, Selenium; Automation; Test</PackageTags>
     <RepositoryUrl>https://github.com/tamnguyenbbt/Okapi.Support.Report.Html</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
