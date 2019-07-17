@@ -19,10 +19,32 @@
     <Product>Okapi.Support.Report.Html</Product>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="html\d3pie\d3-min.js" />
+    <None Remove="html\d3pie\d3.js" />
+    <None Remove="html\d3pie\d3pie.js" />
+    <None Remove="html\d3pie\pie-report.js" />
     <None Remove="html\table-highlight-vertical\css\main.css" />
     <None Remove="html\table-highlight-vertical\css\util.css" />
     <None Remove="html\table-highlight-vertical\fonts\font-awesome-4-7-0\css\font-awesome-min.css" />
     <None Remove="html\table-highlight-vertical\fonts\font-awesome-4-7-0\css\font-awesome.css" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-Black.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-BlackItalic.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-Bold.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-BoldItalic.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-ExtraBold.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-ExtraBoldItalic.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-ExtraLight.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-ExtraLightItalic.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-Italic.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-Light.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-LightItalic.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-Medium.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-MediumItalic.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-Regular.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-SemiBold.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-SemiBoldItalic.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-Thin.ttf" />
+    <None Remove="html\table-highlight-vertical\fonts\montserrat\Montserrat-ThinItalic.ttf" />
     <None Remove="html\table-highlight-vertical\images\icons\favicon.ico" />
     <None Remove="html\table-highlight-vertical\js\main.js" />
     <None Remove="html\report.html" />
@@ -54,6 +76,9 @@
     <None Remove="html\table-highlight-vertical\vendor\select2\select2.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="html\d3pie\d3.js" />
+    <EmbeddedResource Include="html\d3pie\d3pie.js" />
+    <EmbeddedResource Include="html\d3pie\pie-report.js" />
     <EmbeddedResource Include="html\table-highlight-vertical\css\main.css">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -64,6 +89,24 @@
     <EmbeddedResource Include="html\table-highlight-vertical\fonts\font-awesome-4-7-0\css\font-awesome-min.css">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-Black.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-BlackItalic.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-Bold.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-BoldItalic.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-ExtraBold.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-ExtraBoldItalic.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-ExtraLight.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-ExtraLightItalic.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-Italic.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-Light.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-LightItalic.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-Medium.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-MediumItalic.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-Regular.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-SemiBold.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-SemiBoldItalic.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-Thin.ttf" />
+    <EmbeddedResource Include="html\table-highlight-vertical\fonts\montserrat\Montserrat-ThinItalic.ttf" />
     <EmbeddedResource Include="html\table-highlight-vertical\images\icons\favicon.ico" />
     <EmbeddedResource Include="html\table-highlight-vertical\test-case-detailed-report.html">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>

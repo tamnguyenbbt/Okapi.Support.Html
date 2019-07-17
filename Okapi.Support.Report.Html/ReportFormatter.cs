@@ -27,7 +27,7 @@ namespace Okapi.Support.Report.Html
         {
             session = Session.Instance;
             reportDirectory = session.ReportDirectory;
-            detailedReportDirectory = $"{reportDirectory}{Path.DirectorySeparatorChar}OkapiReport_{session.StartDateTime.GetTimestamp()}";
+            detailedReportDirectory = $"{reportDirectory}{Path.DirectorySeparatorChar}Report_{session.StartDateTime.GetTimestamp()}";
             reportPath = $"{detailedReportDirectory}.html";
             firstTimeReporting = !session.ReportingInProgress;
         }
@@ -57,6 +57,7 @@ namespace Okapi.Support.Report.Html
             }
 
             string reportContent = templateContent.Replace("{testCases}", $"{existingReportData}{newReportData}");
+            reportContent = reportContent.Replace("{sessionDateTime}", session.StartDateTime.ToString("dd-MMMM-yyyy hh:mm:ss tt"));
             Util.WriteToFile(reportPath, true, reportContent);
             return templateFullName;
         }
@@ -98,6 +99,13 @@ namespace Okapi.Support.Report.Html
 
             if (firstTimeReporting && allResourceFullFileNames.HasAny())
             {
+                try
+                {
+                    var dir = new DirectoryInfo($"{reportDirectory}{Path.DirectorySeparatorChar}html");
+                    dir.Delete(true);
+                }
+                catch { }
+
                 var copyingResourceFullFileNames = excludedResourceFullNames.HasAny()
                     ? allResourceFullFileNames.Where(x => !excludedResourceFullNames.Any(e => x.Equals(e)))
                     : allResourceFullFileNames;
@@ -153,7 +161,6 @@ namespace Okapi.Support.Report.Html
                 writer.AddAttribute(HtmlTextWriterAttribute.Class, "row100");
                 writer.RenderBeginTag(HtmlTextWriterTag.Tr);
 
-
                 for (int i = 0; i < 5; i++)
                 {
                     writer.AddAttribute(HtmlTextWriterAttribute.Class, $"column100 column{i + 1}");
@@ -181,6 +188,7 @@ namespace Okapi.Support.Report.Html
                                 break;
                         }
 
+                        writer.AddAttribute(HtmlTextWriterAttribute.Name, $"{values[i].ToLower()}");
                         writer.RenderBeginTag(HtmlTextWriterTag.Td);
                         writer.Write(values[i]);
                     }
