@@ -144,30 +144,32 @@ namespace Okapi.Support.Report.Html
         {
             string testCaseName = testCaseDataItems["Test Case Name"];
             StringWriter stringWriter = new StringWriter();
+            List<string> values = testCaseDataItems.Values.ToList();
+            List<string> keys = testCaseDataItems.Keys.ToList();
 
             using (HtmlTextWriter writer = new HtmlTextWriter(stringWriter))
             {
                 writer.AddAttribute(okapiSessionIdAttribute, $"{session.Id}");
                 writer.AddAttribute(HtmlTextWriterAttribute.Class, "row100");
                 writer.RenderBeginTag(HtmlTextWriterTag.Tr);
-                List<string> testCaseDataItemValues = testCaseDataItems.Values.ToList();
+
 
                 for (int i = 0; i < 5; i++)
                 {
                     writer.AddAttribute(HtmlTextWriterAttribute.Class, $"column100 column{i + 1}");
                     writer.AddAttribute("data-column", $"column{i + 1}");
 
-                    if (i == 0)
+                    if (keys[i].Equals("Test Case Name"))
                     {
                         writer.RenderBeginTag(HtmlTextWriterTag.Td);
-                        writer.AddAttribute("href", $"{detailedReportDirectory}/{testCaseName}.html");
+                        writer.AddAttribute("href", $"{detailedReportDirectory}{Path.DirectorySeparatorChar}{testCaseName}.html");
                         writer.RenderBeginTag(HtmlTextWriterTag.A);
-                        writer.Write(testCaseDataItemValues[i]);
+                        writer.Write(values[i]);
                         writer.RenderEndTag();
                     }
-                    else if (i == 1)
+                    else if (keys[i].Equals("Result"))
                     {
-                        switch (testCaseDataItemValues[i].ToLower())
+                        switch (values[i].ToLower())
                         {
                             case "pass":
                                 writer.AddAttribute(HtmlTextWriterAttribute.Style, "color: green; ");
@@ -180,12 +182,12 @@ namespace Okapi.Support.Report.Html
                         }
 
                         writer.RenderBeginTag(HtmlTextWriterTag.Td);
-                        writer.Write(testCaseDataItemValues[i]);
+                        writer.Write(values[i]);
                     }
                     else
                     {
                         writer.RenderBeginTag(HtmlTextWriterTag.Td);
-                        writer.Write(testCaseDataItemValues[i]);
+                        writer.Write(values[i]);
                     }
 
                     writer.RenderEndTag();
@@ -235,7 +237,7 @@ namespace Okapi.Support.Report.Html
                         writer.AddAttribute(HtmlTextWriterAttribute.Class, "column100 column2");
                         writer.AddAttribute("data-column", "column2");
 
-                        if (i == 1)
+                        if (keys[i].Equals("Result"))
                         {
                             switch (values[i].ToLower())
                             {
@@ -248,12 +250,25 @@ namespace Okapi.Support.Report.Html
                                 default:
                                     break;
                             }
+
+                            writer.RenderBeginTag(HtmlTextWriterTag.Td);
+                            writer.Write(values[i]);
+                        }
+                        else if (keys[i].Equals("Screenshot"))
+                        {
+                            writer.RenderBeginTag(HtmlTextWriterTag.Td);
+                            writer.AddAttribute("href", values[i]);
+                            writer.RenderBeginTag(HtmlTextWriterTag.A);
+                            writer.Write(values[i]);
+                            writer.RenderEndTag();
+                        }
+                        else
+                        {
+                            writer.RenderBeginTag(HtmlTextWriterTag.Td);
+                            writer.Write(values[i]);
                         }
 
-                        writer.RenderBeginTag(HtmlTextWriterTag.Td);
-                        writer.Write(values[i]);
                         writer.RenderEndTag();
-
                         writer.RenderEndTag();
                     }
                 }
@@ -278,7 +293,8 @@ namespace Okapi.Support.Report.Html
                 { "Test Object Info", testCase.TestObjectInfo },
                 { "Additional Info", testCase.AllAdditionalData.ConvertToString()?.Replace("\"", "") },
                 { "Fail Additional Info", testCase.FailAdditionalData.ConvertToString()?.Replace("\"", "") },
-                { "Exception", testCase.Exception?.ToString() }
+                { "Exception", testCase.Exception?.ToString() },
+                { "Screenshot", testCase.SnapshotPath }
             };
         }
 
@@ -295,6 +311,7 @@ namespace Okapi.Support.Report.Html
                 { "Additional Info", testStep.AllAdditionalData.ConvertToString()?.Replace("\"", "") },
                 { "Fail Additional Info", testStep.FailAdditionalData.ConvertToString()?.Replace("\"", "") },
                 { "Exception", testStep.Exception?.ToString() },
+                { "Screenshot", testStep.SnapshotPath },
                 { "Parent Steps", testStep.ParentSteps.ConvertToString()?.Replace("\"", "") }
             };
         }
