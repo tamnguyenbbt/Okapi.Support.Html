@@ -102,9 +102,8 @@ var pieConfig = {
         },
         labels: {
             outer: {
-                format: "label",
-                hideWhenLessThanPercentage: null,
-                pieDistance: 30
+                format: "label-value1",
+                pieDistance: 32
             },
             inner: {
                 format: "percentage",
@@ -150,9 +149,9 @@ var pieConfig = {
             highlightLuminosity: -0.2
         },
         tooltips: {
-            enabled: false,
-            type: "caption|placeholder",
-            string: "",
+            enabled: true,
+            type: "placeholder",
+            string: "{label}: {value}",
             placeholderParser: null,
             styles: {
                 fadeInSpeed: 250,
