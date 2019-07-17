@@ -2,22 +2,22 @@
 Support Okapi Web UI automation test library, providing html report formatter
 
 ## NuGet
-* https://www.nuget.org/packages/Okapi.Support.Report.Html/1.0.2
-* Install-Package Okapi.Support.Report.Html -Version 1.0.2
+* https://www.nuget.org/packages/Okapi.Support.Report.Html/1.0.3
+* Install-Package Okapi.Support.Report.Html -Version 1.0.3
 
 ## Dependencies
 ### .NETFramework 4.5
-* Okapi.Common (>= 1.0.3)
+* Okapi.Common (>= 1.0.4)
 * Serilog (>= 2.8.0)
 * Serilog.Sinks.File (>= 4.0.0)
 
 ### .NETFramework 4.6
-* Okapi.Common (>= 1.0.3)
+* Okapi.Common (>= 1.0.4)
 * Serilog (>= 2.8.0)
 * Serilog.Sinks.File (>= 4.0.0)
           
 ## Versions
-* Version **1.0.2** released on 16/07/2019
+* Version **1.0.3** released on 17/07/2019
 
 ## Author
 ###  **Tam Nguyen**
