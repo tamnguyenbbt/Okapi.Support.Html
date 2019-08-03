@@ -327,7 +327,7 @@ namespace Okapi.Support.Report.Html
                 { "Additional Info", testStep?.AllAdditionalData?.ConvertToString()?.Replace("\"", "") },
                 { "Fail Additional Info", testStep?.FailAdditionalData?.ConvertToString()?.Replace("\"", "") },
                 { "Exception", testStep?.Exception?.ToString() },
-                { "Screenshot", testStep?.SnapshotPath },
+                { "Screenshot", testStep?.ReportRelativeSnapshotPath },
                 { "Parent Steps", testStep?.ParentSteps?.ConvertToString()?.Replace("\"", "") }
             };
         }
