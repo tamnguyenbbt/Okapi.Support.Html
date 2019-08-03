@@ -14,6 +14,7 @@ namespace Okapi.Support.Report.Html
     {
         private readonly string reportPath;
         private readonly string detailedReportDirectory;
+        private readonly string relativeDetailedReportDirectory;
         private readonly string reportDirectory;
         private Session session = null;
         private const string okapiSessionIdAttribute = "okapiSessionId";
@@ -28,6 +29,7 @@ namespace Okapi.Support.Report.Html
             session = Session.Instance;
             reportDirectory = session.ReportDirectory;
             detailedReportDirectory = $"{reportDirectory}{Path.DirectorySeparatorChar}Report_{session.StartDateTime.GetTimestamp()}";
+            relativeDetailedReportDirectory = $"{session.RelativeReportDirectory}{Path.DirectorySeparatorChar}Report_{session.StartDateTime.GetTimestamp()}";
             reportPath = $"{detailedReportDirectory}.html";
             firstTimeReporting = !session.ReportingInProgress;
         }
@@ -86,7 +88,7 @@ namespace Okapi.Support.Report.Html
                 testCase.TestSteps.ToList().ForEach(x =>
                 {
                     Dictionary<string, string> testStepDataItems = GetTestStepDataItems(x);
-                    stepDetails = $"{stepDetails}{BuildTestArtifactDetailedReportBody(testStepDataItems, "table100 ver2 m-b-10", x.Result.Equals(TestResult.PASS) ? "ver1" : "ver4")}";
+                    stepDetails = $"{stepDetails}{BuildTestArtifactDetailedReportBody(testStepDataItems, "table100 ver2 m-b-10", x.Result.Equals(TestResult.Passed) ? "ver1" : "ver4")}";
                 });
             }
 
@@ -161,7 +163,7 @@ namespace Okapi.Support.Report.Html
                 writer.AddAttribute(HtmlTextWriterAttribute.Class, "row100");
                 writer.RenderBeginTag(HtmlTextWriterTag.Tr);
 
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 6; i++)
                 {
                     writer.AddAttribute(HtmlTextWriterAttribute.Class, $"column100 column{i + 1}");
                     writer.AddAttribute("data-column", $"column{i + 1}");
@@ -169,7 +171,7 @@ namespace Okapi.Support.Report.Html
                     if (keys[i].Equals("Test Case Name"))
                     {
                         writer.RenderBeginTag(HtmlTextWriterTag.Td);
-                        writer.AddAttribute("href", $"{detailedReportDirectory}{Path.DirectorySeparatorChar}{testCaseName}.html");
+                        writer.AddAttribute("href", $"{relativeDetailedReportDirectory}{Path.DirectorySeparatorChar}{testCaseName}.html");
                         writer.RenderBeginTag(HtmlTextWriterTag.A);
                         writer.Write(values[i]);
                         writer.RenderEndTag();
@@ -178,10 +180,10 @@ namespace Okapi.Support.Report.Html
                     {
                         switch (values[i].ToLower())
                         {
-                            case "pass":
+                            case "passed":
                                 writer.AddAttribute(HtmlTextWriterAttribute.Style, "color: green; ");
                                 break;
-                            case "fail":
+                            case "failed":
                                 writer.AddAttribute(HtmlTextWriterAttribute.Style, "color: red; ");
                                 break;
                             default:
@@ -249,10 +251,10 @@ namespace Okapi.Support.Report.Html
                         {
                             switch (values[i].ToLower())
                             {
-                                case "pass":
+                                case "passed":
                                     writer.AddAttribute(HtmlTextWriterAttribute.Style, "color: green; ");
                                     break;
-                                case "fail":
+                                case "failed":
                                     writer.AddAttribute(HtmlTextWriterAttribute.Style, "color: red; ");
                                     break;
                                 default:
@@ -267,7 +269,11 @@ namespace Okapi.Support.Report.Html
                             writer.RenderBeginTag(HtmlTextWriterTag.Td);
                             writer.AddAttribute("href", values[i]);
                             writer.RenderBeginTag(HtmlTextWriterTag.A);
-                            writer.Write(values[i]);
+                            int lastDirectorySeperatorIndex = values[i].LastIndexOf(Path.DirectorySeparatorChar);
+                            string screenshotFileName = lastDirectorySeperatorIndex < 0
+                                ? values[i]
+                                : values[i].Substring(lastDirectorySeperatorIndex + 1);
+                            writer.Write(screenshotFileName);
                             writer.RenderEndTag();
                         }
                         else
@@ -293,16 +299,17 @@ namespace Okapi.Support.Report.Html
         {
             return new Dictionary<string, string>
             {
-                { "Test Case Name", testCase.Method.Name },
-                { "Result", testCase.Result.ToString() },
-                { "Duration (seconds)", testCase.DurationInSeconds == -1 ? null : testCase.DurationInSeconds.ToString() },
-                { "Start At", testCase.StartDateTime.ToString()},
-                { "End At", testCase.EndDateTime.ToString().Contains("1/1/0001") ? null : testCase.EndDateTime.ToString()},
-                { "Test Object Info", testCase.TestObjectInfo },
-                { "Additional Info", testCase.AllAdditionalData.ConvertToString()?.Replace("\"", "") },
-                { "Fail Additional Info", testCase.FailAdditionalData.ConvertToString()?.Replace("\"", "") },
-                { "Exception", testCase.Exception?.ToString() },
-                { "Screenshot", testCase.SnapshotPath }
+                { "Test Case Name", testCase?.Method?.Name },
+                { "Test Case Class Name", testCase?.Method?.ReflectedType?.FullName },
+                { "Result", testCase?.Result.ToString() },
+                { "Duration (seconds)", testCase?.DurationInSeconds == -1 ? null : testCase?.DurationInSeconds.ToString() },
+                { "Start At", testCase?.StartDateTime.ToString()},
+                { "End At", testCase.EndDateTime.ToString().Contains("1/1/0001") ? null : testCase?.EndDateTime.ToString()},
+                { "Test Object Info", testCase?.TestObjectInfo },
+                { "Additional Info", testCase?.AllAdditionalData?.ConvertToString()?.Replace("\"", "") },
+                { "Fail Additional Info", testCase?.FailAdditionalData?.ConvertToString()?.Replace("\"", "") },
+                { "Exception", testCase?.Exception?.ToString() },
+                { "Screenshot", testCase?.ReportRelativeSnapshotPath }
             };
         }
 
@@ -310,17 +317,18 @@ namespace Okapi.Support.Report.Html
         {
             return new Dictionary<string, string>
             {
-                { "Step Name", testStep.Method.Name },
-                { "Result", testStep.Result.ToString() },
-                { "Duration (seconds)", testStep.DurationInSeconds == -1 ? null : testStep.DurationInSeconds.ToString() },
-                { "Start At", testStep.StartDateTime.ToString()},
-                { "End At", testStep.EndDateTime.ToString().Contains("1/1/0001") ? null : testStep.EndDateTime.ToString()},
-                { "Test Object Info", testStep.TestObjectInfo },
-                { "Additional Info", testStep.AllAdditionalData.ConvertToString()?.Replace("\"", "") },
-                { "Fail Additional Info", testStep.FailAdditionalData.ConvertToString()?.Replace("\"", "") },
-                { "Exception", testStep.Exception?.ToString() },
-                { "Screenshot", testStep.SnapshotPath },
-                { "Parent Steps", testStep.ParentSteps.ConvertToString()?.Replace("\"", "") }
+                { "Step Name", testStep?.Method.Name },
+                { "Step Class Name", testStep?.Method?.ReflectedType?.FullName },
+                { "Result", testStep?.Result.ToString() },
+                { "Duration (seconds)", testStep?.DurationInSeconds == -1 ? null : testStep?.DurationInSeconds.ToString() },
+                { "Start At", testStep?.StartDateTime.ToString()},
+                { "End At", testStep.EndDateTime.ToString().Contains("1/1/0001") ? null : testStep?.EndDateTime.ToString()},
+                { "Test Object Info", testStep?.TestObjectInfo },
+                { "Additional Info", testStep?.AllAdditionalData?.ConvertToString()?.Replace("\"", "") },
+                { "Fail Additional Info", testStep?.FailAdditionalData?.ConvertToString()?.Replace("\"", "") },
+                { "Exception", testStep?.Exception?.ToString() },
+                { "Screenshot", testStep?.SnapshotPath },
+                { "Parent Steps", testStep?.ParentSteps?.ConvertToString()?.Replace("\"", "") }
             };
         }
 

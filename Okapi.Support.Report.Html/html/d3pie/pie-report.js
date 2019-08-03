@@ -2,16 +2,16 @@
 var testResult = {
     data: {
         passCount: function () {
-            return document.getElementsByName("pass").length;
+            return document.getElementsByName("passed").length;
         },
         failCount: function () {
-            return document.getElementsByName("fail").length;
+            return document.getElementsByName("failed").length;
         },
         ignoredCount: function () {
-            return document.getElementsByName("ignoredCount").length;
+            return document.getElementsByName("ignored").length;
         },
-        noRunCount: function () {
-            return document.getElementsByName("norun").length;
+        skippedCount: function () {
+            return document.getElementsByName("skipped").length;
         },
         getPieColors: function () {
 
@@ -203,10 +203,10 @@ var pieConfig = {
         },
         data: {
             content: [
-                { label: "Pass", value: Number(testResult.data.passCount()) },
-                { label: "Fail", value: Number(testResult.data.failCount()) },
+                { label: "Passed", value: Number(testResult.data.passCount()) },
+                { label: "Failed", value: Number(testResult.data.failCount()) },
                 { label: "Ignored", value: Number(testResult.data.ignoredCount()) },
-                { label: "NoRun", value: Number(testResult.data.noRunCount()) }
+                { label: "Skipped", value: Number(testResult.data.skippedCount()) }
             ]
         }
     }
