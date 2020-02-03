@@ -309,7 +309,10 @@ namespace Okapi.Support.Report.Html
                 { "Additional Info", testCase?.AllAdditionalData?.ConvertToString()?.Replace("\"", "") },
                 { "Fail Additional Info", testCase?.FailAdditionalData?.ConvertToString()?.Replace("\"", "") },
                 { "Exception", testCase?.Exception?.ToString() },
-                { "Screenshot", testCase?.ReportRelativeSnapshotPath }
+                { "Screenshot", testCase?.ReportRelativeSnapshotPath },
+                { "File Name", testCase?.FileName },
+                { "Line", testCase?.FileLineNumber?.ToString() },
+                { "Column", testCase?.FileColumnNumber?.ToString() }
             };
         }
 
@@ -328,6 +331,9 @@ namespace Okapi.Support.Report.Html
                 { "Fail Additional Info", testStep?.FailAdditionalData?.ConvertToString()?.Replace("\"", "") },
                 { "Exception", testStep?.Exception?.ToString() },
                 { "Screenshot", testStep?.ReportRelativeSnapshotPath },
+                { "File Name", testStep?.FileName },
+                { "Line", testStep?.FileLineNumber?.ToString() },
+                { "Column", testStep?.FileColumnNumber?.ToString() },
                 { "Parent Steps", testStep?.ParentSteps?.ConvertToString()?.Replace("\"", "") }
             };
         }
